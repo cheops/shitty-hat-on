@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <FastLED.h>
 
+// pin numbers, the blue colored ones in doc/attiny85-guide-pinout.png
 #define IR_RX_PIN   4
 #define SCL         2
 #define SDA         0
