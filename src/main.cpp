@@ -4,11 +4,11 @@
 #include <Arduino.h>
 #include <FastLED.h>
 
-#define IR_RX_PIN   3
-#define SCL         7
-#define SDA         5
+#define IR_RX_PIN   4
+#define SCL         2
+#define SDA         0
 
-#define LED_PIN     2
+#define LED_PIN     3
 #define NUM_LEDS    10
 #define BRIGHTNESS  255
 #define LED_TYPE    WS2812
