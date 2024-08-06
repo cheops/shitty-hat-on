@@ -1,6 +1,29 @@
 #include "data.h"
 #include <Arduino.h>
 
+
+
+IrDataPacket::IrDataPacket(){};
+IrDataPacket::IrDataPacket(uint32_t raw){this->raw=raw;};
+
+uint32_t IrDataPacket::get_raw()         { return this->raw; }
+uint8_t IrDataPacket::get_channel()      { return (this->raw & 0b00000000000000000000000000000001) >> 0; }
+uint8_t IrDataPacket::get_team()         { return (this->raw & 0b00000000000000000000000000001110) >> 1; }
+uint8_t IrDataPacket::get_action()       { return (this->raw & 0b00000000000000000000000000110000) >> 4; }
+uint8_t IrDataPacket::get_action_param() { return (this->raw & 0b00000000000000000000001111000000) >> 6; }
+uint16_t IrDataPacket::get_player_id()   { return (this->raw & 0b00000000001111111111110000000000) >> 10; }
+uint8_t IrDataPacket::get_crc()          { return (this->raw & 0b00111111110000000000000000000000) >> 22; }
+
+void IrDataPacket::set_raw(uint32_t raw)                  { this->raw = raw; }
+void IrDataPacket::set_channel(uint8_t channel)           { this->raw &= ~(0b1 << 0); this->raw |= (channel & 0b1) << 0;}
+void IrDataPacket::set_team(uint8_t team)                 { this->raw &= ~(0b111 << 1); this->raw |= (team & 0b111) << 1;}
+void IrDataPacket::set_action(uint8_t action)             { this->raw &= ~(0b11 << 4); this->raw |= (action & 0b11) << 4;}
+void IrDataPacket::set_action_param(uint8_t action_param) { this->raw &= ~(0b1111 << 6); this->raw |= (action_param & 0b1111) << 6;}
+void IrDataPacket::set_player_id(uint16_t player_id)      { this->raw &= ~(0b111111111111 << 10); this->raw |= (player_id & 0b111111111111) << 10;}
+void IrDataPacket::set_crc(uint8_t crc)                   { this->raw &= ~(0b11111111 << 22); this->raw |= (crc & 0b11111111) << 22;}
+void IrDataPacket::set_unused(uint8_t unused)             { this->raw &= ~(0b11 << 30); this->raw |= (unused & 0b11) << 30;}
+
+
 /* #region DataReader */
 void DataReader::handlePinChange(bool state)
 {
@@ -102,19 +125,15 @@ IrDataPacket _data::readIr() // add overload to bypass command type validation?
 {
     if (ir1_reader.isDataReady())
     {
-        IrDataPacket p;
-        p.raw = ir1_reader.getPacket();
-        p.raw = calculateCRC(p.raw);
-        if (p.crc == 0)
+        IrDataPacket p(ir1_reader.getPacket());
+        p.set_raw(calculateCRC(p.get_raw()));
+        if (p.get_crc() == 0)
         {
-
             return p;
         }
     }
 
-    auto emptyPacket = IrDataPacket();
-    emptyPacket.raw = 0;
-    return emptyPacket;
+    return IrDataPacket(0);
 }
 
 _data &_data::getInstance()

@@ -111,11 +111,11 @@ void nextPattern()
 
 void handle_ir_packet(IrDataPacket packet)
 {
-    if (packet.raw != 0 && packet.action == eActionDamage)
+    if (packet.get_raw() != 0 && packet.get_action() == eActionDamage)
     {
         CRGB color = CRGB::Black;
 
-        switch (packet.team)
+        switch (packet.get_team())
         {
         case eTeamRex:
             color = CRGB::Red;
@@ -129,21 +129,21 @@ void handle_ir_packet(IrDataPacket packet)
             color = CRGB::Green;
             break;
 
-        case eTeamYellow:
-            color = CRGB::Yellow;
-            break;
+        // case eTeamYellow:
+        //     color = CRGB::Yellow;
+        //     break;
 
-        case eTeamMagenta:
-            color = CRGB::Magenta;
-            break;
+        // case eTeamMagenta:
+        //     color = CRGB::Magenta;
+        //     break;
 
-        case eTeamCyan:
-            color = CRGB::Cyan;
-            break;
+        // case eTeamCyan:
+        //     color = CRGB::Cyan;
+        //     break;
 
-        case eTeamWhite:
-            color = CRGB::White;
-            break;
+        // case eTeamWhite:
+        //     color = CRGB::White;
+        //     break;
 
         default:
             color = CRGB::Black;
@@ -151,11 +151,13 @@ void handle_ir_packet(IrDataPacket packet)
         }
 
         leds = color;
+        FastLED.show();
+
         while (leds[0].getAverageLight() != 0)
         {
-            FastLED.show();
             delay(1000/FRAMES_PER_SECOND);
             leds.fadeToBlackBy(10);
+            FastLED.show();
         }
         delay(100);
         Data.readIr(); // clear buffer
