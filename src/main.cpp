@@ -111,11 +111,11 @@ void nextPattern()
 
 void handle_ir_packet(IrDataPacket packet)
 {
-    if (packet.get_raw() != 0 && packet.get_action() == eActionDamage)
+    if (packet.raw != 0 && packet.action == eActionDamage)
     {
         CRGB color = CRGB::Black;
 
-        switch (packet.get_team())
+        switch (packet.team)
         {
         case eTeamRex:
             color = CRGB::Red;

@@ -1,29 +1,6 @@
 #include "data.h"
 #include <Arduino.h>
 
-
-
-IrDataPacket::IrDataPacket(){};
-IrDataPacket::IrDataPacket(uint32_t raw){this->raw=raw;};
-
-uint32_t IrDataPacket::get_raw()         { return this->raw; }
-uint8_t IrDataPacket::get_channel()      { return (this->raw & 0b00000000000000000000000000000001) >> 0; }
-uint8_t IrDataPacket::get_team()         { return (this->raw & 0b00000000000000000000000000001110) >> 1; }
-uint8_t IrDataPacket::get_action()       { return (this->raw & 0b00000000000000000000000000110000) >> 4; }
-uint8_t IrDataPacket::get_action_param() { return (this->raw & 0b00000000000000000000001111000000) >> 6; }
-uint16_t IrDataPacket::get_player_id()   { return (this->raw & 0b00000000001111111111110000000000) >> 10; }
-uint8_t IrDataPacket::get_crc()          { return (this->raw & 0b00111111110000000000000000000000) >> 22; }
-
-void IrDataPacket::set_raw(uint32_t raw)                  { this->raw = raw; }
-void IrDataPacket::set_channel(uint8_t channel)           { this->raw &= ~(0b1 << 0); this->raw |= (channel & 0b1) << 0;}
-void IrDataPacket::set_team(uint8_t team)                 { this->raw &= ~(0b111 << 1); this->raw |= (team & 0b111) << 1;}
-void IrDataPacket::set_action(uint8_t action)             { this->raw &= ~(0b11 << 4); this->raw |= (action & 0b11) << 4;}
-void IrDataPacket::set_action_param(uint8_t action_param) { this->raw &= ~(0b1111 << 6); this->raw |= (action_param & 0b1111) << 6;}
-void IrDataPacket::set_player_id(uint16_t player_id)      { this->raw &= ~(0b111111111111 << 10); this->raw |= (player_id & 0b111111111111) << 10;}
-void IrDataPacket::set_crc(uint8_t crc)                   { this->raw &= ~(0b11111111 << 22); this->raw |= (crc & 0b11111111) << 22;}
-void IrDataPacket::set_unused(uint8_t unused)             { this->raw &= ~(0b11 << 30); this->raw |= (unused & 0b11) << 30;}
-
-
 /* #region DataReader */
 void DataReader::handlePinChange(bool state)
 {
@@ -125,15 +102,18 @@ IrDataPacket _data::readIr() // add overload to bypass command type validation?
 {
     if (ir1_reader.isDataReady())
     {
-        IrDataPacket p(ir1_reader.getPacket());
-        p.set_raw(calculateCRC(p.get_raw()));
-        if (p.get_crc() == 0)
+        IrDataPacket p;
+        p.raw = ir1_reader.getPacket();
+        p.raw = calculateCRC(p.raw);
+        if (p.crc == 0)
         {
             return p;
         }
     }
 
-    return IrDataPacket(0);
+    auto emptyPacket = IrDataPacket();
+    emptyPacket.raw = 0;
+    return emptyPacket;
 }
 
 _data &_data::getInstance()
@@ -149,14 +129,14 @@ void _data::init()
 uint32_t _data::calculateCRC(uint32_t raw_packet)
 {
     uint32_t raw = raw_packet;
-    uint32_t checksum = ((raw << 2) & 0b10000000111111110111111100) ^
-                        ((raw << 1) & 0b01111111100000000111111110) ^
-                        ((raw << 0) & 0b00000000111111111111111111) ^
-                        ((raw >> 1) & 0b00000000100000000000000000) ^
-                        ((raw >> 2) & 0b00000000011111110000000000) ^
-                        ((raw >> 3) & 0b00000000111111111000000000) ^
-                        ((raw >> 4) & 0b00000011100000001111111100) ^
-                        ((raw >> 5) & 0b00000000111111111000000010);
+    uint32_t checksum = ((raw << 2) & (uint32_t)0b10000000111111110111111100) ^
+                        ((raw << 1) & (uint32_t)0b01111111100000000111111110) ^
+                        ((raw << 0) & (uint32_t)0b00000000111111111111111111) ^
+                        ((raw >> 1) & (uint32_t)0b00000000100000000000000000) ^
+                        ((raw >> 2) & (uint32_t)0b00000000011111110000000000) ^
+                        ((raw >> 3) & (uint32_t)0b00000000111111111000000000) ^
+                        ((raw >> 4) & (uint32_t)0b00000011100000001111111100) ^
+                        ((raw >> 5) & (uint32_t)0b00000000111111111000000010);
     checksum = checksum ^ (checksum >> 8) ^ (checksum >> 16) ^ (checksum >> 24);
     checksum = checksum & 0xFF;
     raw ^= checksum << 24;

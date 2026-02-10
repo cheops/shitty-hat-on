@@ -3,16 +3,16 @@
 #define DATA_H
 #include <Arduino.h>
 
-const int ir_bit_lenght = 32;
-const int ir_start_high_time = 16;
-const int ir_start_low_time = 8;
-const int ir_zero_high_time = 1;
-const int ir_zero_low_time = 1;
-const int ir_one_high_time = 1;
-const int ir_one_low_time = 3;
-const int ir_stop_high_time = 1;
-const int ir_stop_low_time = 1;
-const int pulse_train_lenght =  2 + ir_bit_lenght * 2 + 2;
+const uint8_t ir_bit_lenght = 32;
+const uint8_t ir_start_high_time = 16;
+const uint8_t ir_start_low_time = 8;
+const uint8_t ir_zero_high_time = 1;
+const uint8_t ir_zero_low_time = 1;
+const uint8_t ir_one_high_time = 1;
+const uint8_t ir_one_low_time = 3;
+const uint8_t ir_stop_high_time = 1;
+const uint8_t ir_stop_low_time = 1;
+const uint8_t pulse_train_lenght =  2 + ir_bit_lenght * 2 + 2;
 #define IR_IN1_PIN 4 // PB4
 
 enum TeamColor : uint8_t
@@ -34,42 +34,19 @@ enum Action : uint8_t
   eActionHeal = 2,
 };
 
-/**
- * @brief IR data packet
- * holds the 32 ir bits in a private uint32_t
- * structure: return type - field name - nr of bits
- *  uint8_t channel: 1;
- *  uint8_t team: 3;
- *  uint8_t action: 2;
- *  uint8_t action_param: 4;
- *  uint16_t player_id: 12;
- *  uint8_t crc: 8;
- *  uint8_t unused: 2;
- */
-class IrDataPacket
+union IrDataPacket 
 {
-private:
   uint32_t raw;
-public:
-  IrDataPacket();
-  IrDataPacket(uint32_t raw);
-  uint32_t get_raw();
-  void set_raw(uint32_t raw);
-  uint8_t get_channel();
-  void set_channel(uint8_t channel);
-  uint8_t get_team();
-  void set_team(uint8_t team);
-  uint8_t get_action();
-  void set_action(uint8_t action);
-  uint8_t get_action_param();
-  void set_action_param(uint8_t action_param);
-  uint16_t get_player_id();
-  void set_player_id(uint16_t player_id);
-  uint8_t get_crc();
-  void set_crc(uint8_t crc);
-  uint8_t get_unused();
-  void set_unused(uint8_t unused);
-};
+  struct __attribute__((__packed__))
+  {
+    uint8_t channel: 1;
+    uint8_t team: 3;
+    uint8_t action: 2;
+    uint8_t action_param: 4;
+    uint16_t player_id: 12;
+    uint8_t crc: 8;
+  };
+} __attribute__((__packed__));
 
 
 class DataReader
