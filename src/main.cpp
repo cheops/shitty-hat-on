@@ -46,6 +46,10 @@ void nextPattern();
 
 void setup()
 {
+    // Force clock prescaler to 1 (8MHz) even if CKDIV8 fuse is set
+    CLKPR = (1 << CLKPCE);
+    CLKPR = 0;
+
     // delay( 3000 ); // power-up safety delay // does not seem necessary, start showing patterns sooner.
     FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
     FastLED.setBrightness(BRIGHTNESS);
