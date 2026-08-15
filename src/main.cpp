@@ -6,8 +6,8 @@
 // pin numbers, the blue colored ones in doc/attiny85-guide-pinout.png
 #define LED_PIN 3
 // #define IR_RX_PIN 4  // defined in "data.h"
-// #define SCL 2
-// #define SDA 0
+#define SCL 2
+#define SDA 0
 
 #define NUM_LEDS 10
 #define BRIGHTNESS 255
@@ -49,6 +49,8 @@ void setup()
     // Force clock prescaler to 1 (8MHz) even if CKDIV8 fuse is set
     CLKPR = (1 << CLKPCE);
     CLKPR = 0;
+
+    PORTB |= (1 << PB0) | (1 << PB2); // Enables pull-up on PB0 and PB2
 
     FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
 #if BRIGHTNESS != 255
